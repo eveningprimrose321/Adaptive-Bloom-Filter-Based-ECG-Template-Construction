@@ -9,28 +9,8 @@ from scipy.io import loadmat
 from scipy.signal import decimate
 from itertools import combinations
 import matplotlib.pyplot as plt
-# file = loadmat('beatbundle_PTB_p_285.mat')
-# beatbundle = file['beatbundle']
-
-# data_ori = np.load('./ptb_data/random_cut/x_train_1000.npy')
 
 
-file = loadmat('../../ptb_data/beatbundle_PTB_p_285.mat')
-beatbundle = file['beatbundle']
-data = np.zeros((285,50,1000))
-for person in range (285):
-    for beats in range (50):
-        data[person,beats,:] = beatbundle[person, beats].flatten()
-
-#%%
-# data = np.zeros((285,150,500))
-# for person in range (285):
-#     for beats in range (150):
-#         data[person,beats,:] = decimate(data_ori[person*150+beats,:].flatten(), 2)
-# data_train = data[:235,:100,:]
-# data_test = data[:,100:,:]
-# data_max = np.max(data_train)
-# data_min = np.min(data_train)
 
 def det(a, b):
     return a[0] * b[1] - a[1] * b[0]
@@ -81,37 +61,28 @@ def bloom_filter(data ,feature_bit, parts):
             start_point += feature_bit
     return np.reshape(template,(-1))
 
-
-# def bloom_filter(data,feature_bit, parts):
-#     data_len = len(data)
-#     to_binary = np.vectorize(lambda x: bin(x)[2:])
-#     template = np.zeros((parts,2**feature_bit))
-#     for part in range(parts):
-#         datax = data[(data_len//parts)*part:(data_len//parts)*(part+1)].astype(int)
-#         datax_bin = to_binary(datax)
-#         feature = np.zeros(((data_len//parts),2*feature_bit))
-#         for bit in range ((data_len//parts)):
-#             string = datax_bin[bit]
-#             char_list = [char for char in string]
-#             a = len(char_list)
-#             b = 2*feature_bit-a
-#             feature[bit,b:] = char_list
-#         feature = np.reshape(feature,(2*(data_len//parts),feature_bit))
-#         for row in range(2*(data_len//parts)):
-#             d_0 = 0
-#             for bit in range(feature_bit):
-#                 temp = (2**(feature_bit-1-bit))*feature[row,bit]
-#                 d_0 += temp
-#             template[part,int(d_0)] += 1
-#     return np.reshape(template,(-1))
 #%%
 #template construction
+
+file = loadmat('../../beatbundle_PTB_p_285.mat')
+beatbundle = file['beatbundle']
+data = np.zeros((285,50,1000))
+for person in range (285):
+    for beats in range (50):
+        data[person,beats,:] = beatbundle[person, beats].flatten()
+        
+data_train = data[:,:30,:]
+data_test = data[:,30:,:]
+data_max = np.max(data_train)
+data_min = np.min(data_train)
+
+
 eer_rec = -1*np.ones((4,6,3))
 for rec_i,feature_bit in enumerate([5,6,7,8]):
-    data_train = data[:,:30,:]
-    data_test = data[:,30:,:]
-    data_max = np.max(data_train)
-    data_min = np.min(data_train)
+    ## feature_bit: trun decimal numbers into how many bits of binary
+    ## (and it will be resized to double of it later)
+    ## normalize the data into the range of (0,2**(2*feature_bit))
+    ## 1.1 is to ensure that the test data will be within (0,2**(2*feature_bit))
     data_train = (data_train - data_min)*(2**(2*feature_bit))/((data_max - data_min)*1.1)
     data_test = (data_test - data_min)*(2**(2*feature_bit))/((data_max - data_min)*1.1)
     data_test = np.clip(data_test, 0, 2**(2*feature_bit))
@@ -214,4 +185,4 @@ for rec_i,feature_bit in enumerate([5,6,7,8]):
             #     plt.show()
             
 
-np.save('system_1_record', eer_rec)
+# np.save('system_1_record', eer_rec)

@@ -9,14 +9,12 @@ from scipy.io import loadmat
 from scipy.signal import decimate
 from itertools import combinations
 import matplotlib.pyplot as plt
-file = loadmat('../../ptb_data/beatbundle_PTB_p_285.mat')
+file = loadmat('../../beatbundle_PTB_p_285.mat')
 beatbundle = file['beatbundle']
-# 
-# data_ori = np.load('./ptb_data/random_cut/x_train_1000.npy')
 
 #%%
 
-    
+## The function of finding intersection 
 
 def det(a, b):
     return a[0] * b[1] - a[1] * b[0]
@@ -77,21 +75,29 @@ def bloom_filter(data , feature_bit, parts, key):
 
 
 #%%
+
+
+data = np.zeros((285,50,1000))
+for person in range (285):
+    for beats in range (50):
+        data[person,beats,:] = beatbundle[person, beats].flatten()
+data_train = data[:,:30,:]
+data_test = data[:,30:,:]
+data_max = np.max(data_train)
+data_min = np.min(data_train)
+
 eer_rec = np.ones((4,6,3))*-1
 for rec_i,feature_bit in enumerate([5,6,7,8]):
-    data = np.zeros((285,50,1000))
-    for person in range (285):
-        for beats in range (50):
-            data[person,beats,:] = beatbundle[person, beats].flatten()
-    data_train = data[:,:30,:]
-    data_test = data[:,30:,:]
-    data_max = np.max(data_train)
-    data_min = np.min(data_train)
+    ## feature_bit: trun decimal numbers into how many bits of binary
+    ## (and it will be resized to double of it later)
+    ## normalize the data into the range of (0,2**(2*feature_bit))
+    ## 1.1 is to ensure that the test data will be within (0,2**(2*feature_bit))
     data_train = (data_train - data_min)*(2**(2*feature_bit))/((data_max - data_min)*1.1)
     data_test = (data_test - data_min)*(2**(2*feature_bit))/((data_max - data_min)*1.1)
     for rec_j,parts in enumerate([5,10,20,25,40,50]):
+        ## split an ECG bundle into how many parts
         for trial in range(3):
-            # print(trial)
+            ## each experiment configuration repeats 3 times
             ### different key per part
             data_len = len(data_train[0,0,:])
             key = []
@@ -107,19 +113,7 @@ for rec_i,feature_bit in enumerate([5,6,7,8]):
                             break
                 key.append(key_person)
                 
-                
-                
-            # ### same key per part
-            # key = []
-            # for person in range(285):
-            #     key_person = []
-            #     while True:
-            #         key_person.append(np.random.randint(4, 7))
-            #         if sum(key_person)>100*12:
-            #             key_person.pop()
-            #             break
-            #     key.append(key_person)
-                    
+
             #%%
             ## template construction
             ## 有做平均template
@@ -135,21 +129,7 @@ for rec_i,feature_bit in enumerate([5,6,7,8]):
                 template.append(np.mean(np.array(template_per_person),axis = 0))
                 label.append(p)
                 
-                
-            # ### 沒做平均template
-            # # avg_idx = list(combinations([1, 2, 3, 4, 0], 3))
-            # template = []
-            # label = []
-            
-            # for p in range(285):
-            #     template_per_person = []
-            #     temp_ecg = np.mean(data_train[p,:3,:],axis=0)
-            #     # for idx in avg_idx:
-            #     #     temp_ecg = np.mean(data_train[p,idx,:],axis=0)
-            #     #     template_per_person.append(bloom_filter(temp_ecg,feature_bit,key[p]))
-            #     template.append(bloom_filter(temp_ecg,feature_bit,key[p]))
-            #     label.append(p)
-                
+
             template = np.array(template)
             label = np.array(label)
             template_len = len(template[0,:])
@@ -210,19 +190,19 @@ for rec_i,feature_bit in enumerate([5,6,7,8]):
             #%% plot
             thre, eer = intersection(far,frr,k_range)
             eer_rec[rec_i,rec_j,trial] = eer
-            if trial == 1:
-                fig = plt.figure(facecolor="w", figsize=(10, 5))
-                plt.plot(k_range,far)
-                plt.plot(k_range,frr)
-                plt.scatter(thre,eer)
-                plt.annotate(f' EER = {eer*100:.2f}%', (thre, eer),xytext = (1, 1),textcoords='offset points')
-                plt.title(f'FAR/FRR curve,system 1,feature_bit={feature_bit},parts = {parts}')
-                plt.legend(["FAR", "FRR"])
-                plt.ylabel("(%)")
-                plt.xlabel("k")
-                plt.grid()
-                fig.savefig(f'./temp_fig/system_2/plt_diffkey_{feature_bit}_{parts}.png') 
-                plt.show()
+            # if trial == 1:
+            #     fig = plt.figure(facecolor="w", figsize=(10, 5))
+            #     plt.plot(k_range,far)
+            #     plt.plot(k_range,frr)
+            #     plt.scatter(thre,eer)
+            #     plt.annotate(f' EER = {eer*100:.2f}%', (thre, eer),xytext = (1, 1),textcoords='offset points')
+            #     plt.title(f'FAR/FRR curve,system 1,feature_bit={feature_bit},parts = {parts}')
+            #     plt.legend(["FAR", "FRR"])
+            #     plt.ylabel("(%)")
+            #     plt.xlabel("k")
+            #     plt.grid()
+            #     # fig.savefig(f'./temp_fig/system_2/plt_diffkey_{feature_bit}_{parts}.png') 
+            #     plt.show()
             
 
-np.save('system_2_record_diffkey', eer_rec)
+# np.save('system_2_record_diffkey', eer_rec)
