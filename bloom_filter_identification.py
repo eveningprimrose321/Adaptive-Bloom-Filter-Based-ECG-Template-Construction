@@ -170,19 +170,19 @@ for rec_i,feature_bit in enumerate([5,6,7,8]):
             #%% plot
             thre, eer = intersection(fpir,fnir,k_range)
             eer_rec[rec_i,rec_j,trial] = eer
-            # if trial == 1:
-            #     fig = plt.figure(facecolor="w", figsize=(10, 5))
-            #     plt.plot(k_range,fpir)
-            #     plt.plot(k_range,fnir)
-            #     plt.scatter(thre,eer)
-            #     plt.annotate(f' EER = {eer*100:.2f}%', (thre, eer),xytext = (1, 1),textcoords='offset points')
-            #     plt.title(f'FPIR/FNIR curve,system 1,feature_bit={feature_bit},parts = {parts}')
-            #     plt.legend(["FPIR", "FNIR"])
-            #     plt.ylabel("(%)")
-            #     plt.xlabel("k")
-            #     plt.grid()
-            #     fig.savefig(f'./temp_fig/system_1/plt{feature_bit}_{parts}_{trial}.png') 
-            #     plt.show()
+            if trial == 1:
+                fig = plt.figure(facecolor="w", figsize=(10, 5))
+                plt.plot(k_range,fpir)
+                plt.plot(k_range,fnir)
+                plt.scatter(thre,eer)
+                plt.annotate(f' EER = {eer*100:.2f}%', (thre, eer),xytext = (1, 1),textcoords='offset points')
+                plt.title(f'FPIR/FNIR curve,system 1,feature_bit={feature_bit},parts = {parts}')
+                plt.legend(["FPIR", "FNIR"])
+                plt.ylabel("(%)")
+                plt.xlabel("k")
+                plt.grid()
+                fig.savefig(f'./system_1/plt{feature_bit}_{parts}_{trial}.png') 
+                plt.show()
             
 
-# np.save('system_1_record', eer_rec)
+np.save('system_1_record', eer_rec)

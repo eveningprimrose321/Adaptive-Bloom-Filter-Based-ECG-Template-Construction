@@ -190,19 +190,19 @@ for rec_i,feature_bit in enumerate([5,6,7,8]):
             #%% plot
             thre, eer = intersection(far,frr,k_range)
             eer_rec[rec_i,rec_j,trial] = eer
-            # if trial == 1:
-            #     fig = plt.figure(facecolor="w", figsize=(10, 5))
-            #     plt.plot(k_range,far)
-            #     plt.plot(k_range,frr)
-            #     plt.scatter(thre,eer)
-            #     plt.annotate(f' EER = {eer*100:.2f}%', (thre, eer),xytext = (1, 1),textcoords='offset points')
-            #     plt.title(f'FAR/FRR curve,system 1,feature_bit={feature_bit},parts = {parts}')
-            #     plt.legend(["FAR", "FRR"])
-            #     plt.ylabel("(%)")
-            #     plt.xlabel("k")
-            #     plt.grid()
-            #     # fig.savefig(f'./temp_fig/system_2/plt_diffkey_{feature_bit}_{parts}.png') 
-            #     plt.show()
+            if trial == 1:
+                fig = plt.figure(facecolor="w", figsize=(10, 5))
+                plt.plot(k_range,far)
+                plt.plot(k_range,frr)
+                plt.scatter(thre,eer)
+                plt.annotate(f' EER = {eer*100:.2f}%', (thre, eer),xytext = (1, 1),textcoords='offset points')
+                plt.title(f'FAR/FRR curve,system 1,feature_bit={feature_bit},parts = {parts}')
+                plt.legend(["FAR", "FRR"])
+                plt.ylabel("(%)")
+                plt.xlabel("k")
+                plt.grid()
+                fig.savefig(f'./system_2/plt_diffkey_{feature_bit}_{parts}.png') 
+                plt.show()
             
 
-# np.save('system_2_record_diffkey', eer_rec)
+np.save('system_2_record_diffkey', eer_rec)
